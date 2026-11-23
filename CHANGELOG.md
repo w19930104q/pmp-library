@@ -10,6 +10,10 @@ This project aims to adhere to [Semantic Versioning](https://semver.org/spec/v2.
 
 ### Added
 
+- Add `curvature_segmentation()` function segmenting a mesh into regions of
+  similar curvature (convex/concave/flat/saddle) by region growing and
+  curvature-similarity merging. Stores per-face segment IDs in the face
+  property `f:segment`.
 - Add `find_duplicate_vertices()` function.
 - Add `analyze()` function.
 - Add `min_edge_length()` function.
