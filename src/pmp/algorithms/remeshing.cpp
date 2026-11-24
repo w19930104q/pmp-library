@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <algorithm>
+#include <vector>
 #include <memory>
 #include <limits>
 #include <numbers>
@@ -269,6 +270,7 @@ private:
     void tangential_smoothing(unsigned int iterations);
     void remove_caps();
 
+    void relax_split_vertex(Vertex v);
     Point minimize_squared_areas(Vertex v);
     Point weighted_centroid(Vertex v);
 
@@ -677,12 +679,99 @@ void Remeshing::split_long_edges()
                 }
                 else
                 {
+                    // The midpoint split does not optimize the position of
+                    // the new vertex, which leaves skinny triangles (aspect
+                    // ratio > 10) with poor angles that subsequent flipping
+                    // and splitting iterations struggle to fix. Locally
+                    // relax the new vertex before projecting it back onto
+                    // the reference surface.
+                    if (!is_boundary && !vlocked_[vnew])
+                        relax_split_vertex(vnew);
                     project_to_reference(vnew);
                 }
 
                 ok = false;
             }
         }
+    }
+}
+
+void Remeshing::relax_split_vertex(Vertex v)
+{
+    // Check whether any incident triangle is skinny (min. angle < 30 deg).
+    // Well-shaped neighborhoods are left untouched.
+    bool has_skinny_face = false;
+    const Scalar cos_30 = 0.8660254037844386; // cos(30 deg)
+    for (auto f : mesh_.faces(v))
+    {
+        Point p[3];
+        int k = 0;
+        for (auto fv : mesh_.vertices(f))
+            p[k++] = points_[fv];
+        for (int i = 0; i < 3; ++i)
+        {
+            const Point d0 = normalize(p[(i + 1) % 3] - p[i]);
+            const Point d1 = normalize(p[(i + 2) % 3] - p[i]);
+            if (dot(d0, d1) > cos_30)
+            {
+                has_skinny_face = true;
+                break;
+            }
+        }
+        if (has_skinny_face)
+            break;
+    }
+    if (!has_skinny_face)
+        return;
+
+    // Relax the new vertex together with its one-ring. Two observations
+    // drive this design:
+    // - The small angle of a skinny triangle sits at one of the *old*
+    //   vertices, so moving only the new vertex cannot fix it.
+    // - The edge midpoint is a fixed point of any symmetric one-ring
+    //   averaging scheme (uniform or cotangent Laplacian), i.e. smoothing
+    //   only the new vertex is a no-op on symmetric skinny configurations.
+    //
+    // Skip neighborhoods touching the boundary: boundary vertices cannot
+    // move, and relaxing the interior vertices next to them tends to
+    // degrade the boundary-adjacent triangles.
+    std::vector<Vertex> neighborhood(1, v);
+    for (auto vv : mesh_.vertices(v))
+    {
+        if (mesh_.is_boundary(vv))
+            return;
+        if (!vlocked_[vv] && !vfeature_[vv])
+            neighborhood.push_back(vv);
+    }
+
+    // A few Jacobi iterations of uniform Laplacian smoothing, restricted to
+    // the tangent plane to keep vertices close to the surface.
+    std::vector<Point> updates(neighborhood.size());
+    for (int iter = 0; iter < 3; ++iter)
+    {
+        for (size_t i = 0; i < neighborhood.size(); ++i)
+        {
+            const Vertex nv = neighborhood[i];
+            Point c(0.0);
+            Scalar n(0.0);
+            for (auto vv : mesh_.vertices(nv))
+            {
+                c += points_[vv];
+                n += 1.0;
+            }
+            if (n == 0.0)
+            {
+                updates[i] = Point(0.0);
+                continue;
+            }
+            c /= n;
+
+            Point u = c - points_[nv];
+            u -= vnormal_[nv] * dot(u, vnormal_[nv]);
+            updates[i] = u;
+        }
+        for (size_t i = 0; i < neighborhood.size(); ++i)
+            points_[neighborhood[i]] += updates[i];
     }
 }
 
