@@ -3,6 +3,8 @@
 
 #include "pmp/algorithms/decimation.h"
 
+#include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <limits>
 #include <numbers>
@@ -271,6 +273,34 @@ public: // clang-format off
             +  j_;
     }
 
+    // Compute the point on the line segment between p0 and p1 that
+    // minimizes the quadric. Used to constrain boundary collapses to
+    // the boundary.
+    Point minimize_on_segment(const Point& p0, const Point& p1) const
+    {
+        const Point d = p1 - p0;
+        const double dx(d[0]), dy(d[1]), dz(d[2]);
+        const double x0(p0[0]), y0(p0[1]), z0(p0[2]);
+
+        // Q(p0 + t*d) is a quadratic polynomial a*t^2 + b*t + c in t
+        const double a = a_*dx*dx + 2.0*b_*dx*dy + 2.0*c_*dx*dz
+            + e_*dy*dy + 2.0*f_*dy*dz
+            + h_*dz*dz;
+        const double b = 2.0*(a_*x0*dx + b_*(x0*dy + y0*dx)
+            + c_*(x0*dz + z0*dx) + d_*dx
+            + e_*y0*dy + f_*(y0*dz + z0*dy) + g_*dy
+            + h_*z0*dz + i_*dz);
+
+        // minimize over t in [0,1] to stay on the segment
+        double t;
+        if (a > 1e-12)
+            t = std::clamp(-0.5*b/a, 0.0, 1.0);
+        else // quadric is (near-)linear along the segment
+            t = (b < 0.0) ? 1.0 : 0.0;
+
+        return p0 + t*d;
+    }
+
 private:
 
     double a_, b_, c_, d_,
@@ -340,6 +370,20 @@ private:
     Normal center_normal_;
     Scalar angle_;
 };
+
+// Penalty factor for the cost of collapsing boundary edges. Boundary
+// collapses are penalized to reduce their probability of being selected,
+// which helps to preserve the mesh boundary during decimation.
+constexpr Scalar boundary_penalty_factor = 10.0;
+
+// Additional penalty factor for collapses involving corner vertices.
+// Corners anchor two boundary polylines, so their collapses are
+// deprioritized even further to preserve the boundary shape.
+constexpr Scalar corner_penalty_factor = 10.0;
+
+// Boundary vertices with a turning angle larger than this are treated as
+// corner vertices.
+constexpr Scalar corner_angle_threshold = 30.0; // degrees
 
 class Decimation
 {
@@ -418,6 +462,14 @@ private:
     // what is the priority of collapsing the halfedge h
     float priority(const CollapseData& cd);
 
+    // is cd a collapse of a boundary edge of the input mesh? only those
+    // collapses are constrained to the boundary and penalized
+    bool is_boundary_collapse(const CollapseData& cd) const;
+
+    // position of the remaining vertex after collapsing cd; collapses of
+    // boundary edges are constrained to the boundary line
+    Point collapse_position(const CollapseData& cd) const;
+
     // preprocess halfedge collapse
     void preprocess_collapse(const CollapseData& cd);
 
@@ -443,6 +495,8 @@ private:
 
     VertexProperty<Point> vpoint_;
     FaceProperty<Point> fnormal_;
+    VertexProperty<bool> vboundary_;
+    VertexProperty<bool> vcorner_;
     VertexProperty<bool> vselected_;
     VertexProperty<bool> vfeature_;
     EdgeProperty<bool> efeature_;
@@ -475,6 +529,8 @@ Decimation::Decimation(SurfaceMesh& mesh) : mesh_(mesh)
 
     // add properties
     vquadric_ = mesh_.add_vertex_property<Quadric>("v:quadric");
+    vboundary_ = mesh_.add_vertex_property<bool>("v:boundary");
+    vcorner_ = mesh_.add_vertex_property<bool>("v:corner");
     texture_seams_ = mesh_.edge_property<bool>("e:seam", false);
 
     // get properties
@@ -489,6 +545,8 @@ Decimation::~Decimation()
 {
     // remove added properties
     mesh_.remove_vertex_property(vquadric_);
+    mesh_.remove_vertex_property(vboundary_);
+    mesh_.remove_vertex_property(vcorner_);
     mesh_.remove_face_property(normal_cone_);
     mesh_.remove_face_property(face_points_);
     mesh_.remove_edge_property(texture_seams_);
@@ -561,6 +619,39 @@ void Decimation::initialize(Scalar aspect_ratio, Scalar edge_length,
                 vquadric_[v] += Quadric(fnormal_[f], vpoint_[v]);
             }
         }
+    }
+
+    // mark boundary vertices of the input mesh; collapses of boundary
+    // edges between those are constrained to the boundary and penalized
+    // in order to preserve the mesh boundary
+    const Scalar cos_corner =
+        std::cos(corner_angle_threshold / 180.0 * std::numbers::pi);
+    for (auto v : mesh_.vertices())
+    {
+        vboundary_[v] = mesh_.is_boundary(v);
+        vcorner_[v] = false;
+
+        if (!vboundary_[v])
+            continue;
+
+        // collect the boundary neighbors of v
+        Point dir[2] = {Point(0, 0, 0), Point(0, 0, 0)};
+        int n_boundary_edges = 0;
+        for (auto u : mesh_.vertices(v))
+        {
+            if (mesh_.is_boundary(mesh_.find_edge(v, u)))
+            {
+                if (n_boundary_edges < 2)
+                    dir[n_boundary_edges] =
+                        normalize(vpoint_[u] - vpoint_[v]);
+                ++n_boundary_edges;
+            }
+        }
+
+        // a boundary vertex with other than two boundary edges or with a
+        // turning angle above the threshold is a corner
+        vcorner_[v] = (n_boundary_edges != 2) ||
+                      (dot(dir[0], dir[1]) > -cos_corner);
     }
 
     // initialize normal cones
@@ -660,9 +751,20 @@ void Decimation::decimate(unsigned int n_vertices)
         // preprocessing -> adjust texcoords
         preprocess_collapse(cd);
 
+        // for boundary edges, compute the boundary-constrained position
+        // of the remaining vertex before the collapse
+        const bool boundary_collapse = is_boundary_collapse(cd);
+        Point boundary_position;
+        if (boundary_collapse)
+            boundary_position = collapse_position(cd);
+
         // perform collapse
         mesh_.collapse(h);
         --nv;
+
+        // constrain the remaining vertex to the boundary
+        if (boundary_collapse)
+            vpoint_[cd.v1] = boundary_position;
 
         // postprocessing, e.g., update quadrics
         postprocess_collapse(cd);
@@ -776,7 +878,9 @@ bool Decimation::is_collapse_legal(const CollapseData& cd)
 
     // remember the positions of the endpoints
     const Point p0 = vpoint_[cd.v0];
-    const Point p1 = vpoint_[cd.v1];
+    // position of the remaining vertex after the collapse; boundary
+    // collapses are constrained to the boundary line
+    const Point p1 = collapse_position(cd);
 
     // check for maximum edge length
     if (edge_length_)
@@ -1009,7 +1113,52 @@ float Decimation::priority(const CollapseData& cd)
     // computer quadric error metric
     Quadric Q = vquadric_[cd.v0];
     Q += vquadric_[cd.v1];
+
+    // boundary edge: constrain the new vertex to the boundary and
+    // penalize the collapse to preserve the mesh boundary
+    if (is_boundary_collapse(cd))
+    {
+        float prio = boundary_penalty_factor * Q(collapse_position(cd));
+
+        // penalize corner collapses even more to preserve corner vertices
+        if (vcorner_[cd.v0] || vcorner_[cd.v1])
+            prio *= corner_penalty_factor;
+
+        return prio;
+    }
+
     return Q(vpoint_[cd.v1]);
+}
+
+bool Decimation::is_boundary_collapse(const CollapseData& cd) const
+{
+    // the edge is a boundary edge (has exactly one incident face) and
+    // both endpoints were on the boundary of the input mesh; the latter
+    // excludes boundary edges that only appear during decimation, for
+    // which a collapse must not move vertices onto the boundary
+    return vboundary_[cd.v0] && vboundary_[cd.v1] &&
+           mesh_.is_boundary(mesh_.edge(cd.v0v1));
+}
+
+Point Decimation::collapse_position(const CollapseData& cd) const
+{
+    // boundary edge: constrain the new vertex to the boundary line by
+    // choosing the point on the collapsed edge (a linear interpolation
+    // of its endpoints) that minimizes the quadric error
+    if (is_boundary_collapse(cd))
+    {
+        // corner vertices anchor two boundary polylines and keep their
+        // position to preserve the boundary shape
+        if (vcorner_[cd.v1])
+            return vpoint_[cd.v1];
+
+        Quadric Q = vquadric_[cd.v0];
+        Q += vquadric_[cd.v1];
+        return Q.minimize_on_segment(vpoint_[cd.v0], vpoint_[cd.v1]);
+    }
+
+    // interior edge: the remaining vertex keeps its position
+    return vpoint_[cd.v1];
 }
 
 void Decimation::preprocess_collapse(const CollapseData& cd)

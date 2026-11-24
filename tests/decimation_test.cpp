@@ -3,6 +3,8 @@
 
 #include "gtest/gtest.h"
 
+#include <cmath>
+
 #include "pmp/algorithms/decimation.h"
 #include "pmp/algorithms/features.h"
 #include "pmp/algorithms/shapes.h"
@@ -18,6 +20,82 @@ TEST(DecimationTest, simplification)
     auto mesh = vertex_onering();
     decimate(mesh, 3);
     EXPECT_EQ(mesh.n_vertices(), size_t(3));
+}
+
+// simplify mesh with boundary: boundary has to be preserved
+TEST(DecimationTest, simplification_boundary)
+{
+    auto mesh = plane(10);
+    triangulate(mesh);
+    ASSERT_TRUE(mesh.is_triangle_mesh());
+
+    decimate(mesh, 20);
+
+    // all boundary vertices have to stay on the boundary of the unit square
+    auto vpoint = mesh.vertex_property<Point>("v:point");
+    size_t n_boundary = 0;
+    for (auto v : mesh.vertices())
+    {
+        if (mesh.is_boundary(v))
+        {
+            ++n_boundary;
+            const Point& p = vpoint[v];
+            const bool on_boundary = p[0] < 1e-6 || p[0] > 1.0 - 1e-6 ||
+                                     p[1] < 1e-6 || p[1] > 1.0 - 1e-6;
+            EXPECT_TRUE(on_boundary);
+            EXPECT_NEAR(p[2], 0.0, 1e-6);
+        }
+    }
+    EXPECT_GT(n_boundary, size_t(0));
+}
+
+// simplify curved mesh with boundary: boundary has to be preserved
+TEST(DecimationTest, simplification_boundary_curved)
+{
+    // paraboloid patch over the unit square, boundary on the square border
+    auto mesh = plane(10);
+    triangulate(mesh);
+    auto vpoint = mesh.vertex_property<Point>("v:point");
+    for (auto v : mesh.vertices())
+    {
+        const Point& p = vpoint[v];
+        vpoint[v] = Point(p[0], p[1], p[0] * p[0] + p[1] * p[1]);
+    }
+
+    size_t n_boundary_before = 0;
+    for (auto v : mesh.vertices())
+        if (mesh.is_boundary(v))
+            ++n_boundary_before;
+
+    decimate(mesh, 40);
+    ASSERT_EQ(mesh.n_vertices(), size_t(40));
+
+    // all boundary vertices have to stay on the boundary of the unit square
+    size_t n_boundary = 0;
+    size_t n_constrained = 0;
+    for (auto v : mesh.vertices())
+    {
+        if (mesh.is_boundary(v))
+        {
+            ++n_boundary;
+            const Point& p = vpoint[v];
+            const bool on_boundary = p[0] < 1e-6 || p[0] > 1.0 - 1e-6 ||
+                                     p[1] < 1e-6 || p[1] > 1.0 - 1e-6;
+            EXPECT_TRUE(on_boundary);
+
+            // vertex constrained to a boundary chord does not lie on the
+            // paraboloid surface anymore
+            if (std::abs(p[2] - (p[0] * p[0] + p[1] * p[1])) > 1e-6)
+                ++n_constrained;
+        }
+    }
+
+    // the boundary is simplified but not removed
+    EXPECT_GT(n_boundary, size_t(0));
+    EXPECT_LT(n_boundary, n_boundary_before);
+
+    // boundary collapses constrained vertices to the boundary
+    EXPECT_GT(n_constrained, size_t(0));
 }
 
 // simplify with feature edge preservation enabled

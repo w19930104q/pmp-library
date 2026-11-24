@@ -11,6 +11,9 @@ namespace pmp {
 //! criteria.
 //! \details Performs incremental greedy mesh decimation based on halfedge
 //! collapses. See \cite kobbelt_1998_general and \cite garland_1997_surface for details.
+//! Meshes with boundaries are supported: Collapsing a boundary edge constrains
+//! the new vertex position to the boundary and boundary collapses are
+//! penalized in order to preserve the mesh boundary.
 //! \param mesh Target mesh. Modified in place.
 //! \param n_vertices Target number of vertices.
 //! \param aspect_ratio Minimum aspect ratio of the triangles.
