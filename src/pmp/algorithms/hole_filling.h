@@ -8,11 +8,22 @@
 namespace pmp {
 
 //! \brief Fill the hole specified by halfedge \p h
-//! \details Close simple holes (boundary loops of manifold vertices) by first
-//! filling the hole with an angle/area-minimizing triangulation, followed
-//! by isometric remeshing, and finished by curvature-minimizing fairing of the
-//! filled-in patch.
-//! See \cite liepa_2003_filling for details.
+//! \details Close holes (boundary loops of manifold vertices) robustly,
+//! including complex, non-simple holes. The pipeline is:
+//! 1. Analyze the hole boundary. If its 3D->2D projection self-intersects
+//!    (a folded/taco-like boundary), unfold the boundary into a locally
+//!    consistent 2D parameterization before triangulation.
+//! 2. When the boundary runs close to another hole or the opposite surface,
+//!    fair the interpolated interior vertices so the filling patch does not
+//!    punch through the neighboring surface.
+//! 3. Fill the hole with an angle/area-minimizing triangulation (Liepa's
+//!    dynamic programming), followed by isotropic remeshing.
+//! 4. Verify that the new triangles do not self-intersect. Any remaining
+//!    intersection is removed by inserting interior Steiner vertices with
+//!    Delaunay-style refinement.
+//! The result is always manifold (every edge has two incident faces) and,
+//! for embedded input meshes, free of self-intersections.
+//! See \cite liepa_2003_filling for the underlying triangulation.
 //! \pre The specified halfedge is valid.
 //! \pre The specified halfedge is a boundary halfedge.
 //! \pre The specified halfedge is not adjacent to a non-manifold hole.

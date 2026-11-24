@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/liiing/feedback/uid36881/build_strict/cmake_install.cmake",
+		"/home/liiing/feedback/uid36881/build_strict/external/predicates/cmake_install.cmake",
+		"/home/liiing/feedback/uid36881/build_strict/src/pmp/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

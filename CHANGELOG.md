@@ -19,6 +19,10 @@ This project aims to adhere to [Semantic Versioning](https://semver.org/spec/v2.
 
 ### Changed
 
+- Make `fill_hole()` robust on complex holes: detect self-intersecting
+  boundaries and unfold them into a simple polygon before triangulation,
+  fair patches near adjacent surfaces, and remove any remaining
+  self-intersections by Steiner-vertex Delaunay refinement.
 - Breaking change: The `visualization` component has been renamed to `viewers`. The corresponding library is `pmp_viewers`, includes are installed in `pmp/viewers`.
 - Upgrade C++ standard to C++20.
 - Remove `SurfaceMesh::property_stats()`.

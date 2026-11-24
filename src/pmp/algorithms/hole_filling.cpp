@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: MIT
 
 #include "pmp/algorithms/hole_filling.h"
+#include "pmp/algorithms/hole_filling_intersection.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include <algorithm>
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 #include "pmp/algorithms/fairing.h"
@@ -45,14 +48,20 @@ private:
         Scalar area_;
     };
 
-    // compute optimal triangulation of hole
-    // throws InvalidInputException in case of a non-manifold hole.
-    void triangulate_hole(Halfedge h);
+    // ---- boundary analysis & unfolding ----
+    void trace_hole(Halfedge h);
+    bool boundary_self_intersects_2d() const;
+    void unfold_boundary();
 
-    // compute the weight of the triangle (i,j,k).
+    // best-fit plane (centroid plus in-plane orthonormal frame) of the
+    // boundary vertices; the frame normal is the smallest-eigenvalue direction
+    void fit_boundary_plane(Point& centroid, Point& ax1, Point& ax2) const;
+
+    // ---- triangulation ----
+    void triangulate_hole();
     Weight compute_weight(int i, int j, int k) const;
 
-    // refine triangulation (isotropic remeshing)
+    // ---- refinement (isotropic remeshing) ----
     void refine();
     void split_long_edges(const Scalar lmax);
     void collapse_short_edges(const Scalar lmin);
@@ -60,6 +69,14 @@ private:
     void relaxation();
     void remove_caps();
     void fairing();
+
+    // ---- proximity-aware interior fairing ----
+    void fair_nearby_boundary();
+
+    // ---- post-fill self-intersection repair ----
+    void repair_self_intersections();
+    std::vector<std::pair<Face, Face>> find_patch_intersections() const;
+    void delaunay_refine_face(Face f);
 
     // return i'th vertex of hole
     Vertex hole_vertex(unsigned int i) const
@@ -79,13 +96,8 @@ private:
     // does interior edge (_a,_b) exist already?
     bool is_interior_edge(Vertex a, Vertex b) const;
 
-    // triangle area
     Scalar compute_area(Vertex a, Vertex b, Vertex c) const;
-
-    // triangle normal
     Point compute_normal(Vertex a, Vertex b, Vertex c) const;
-
-    // dihedral angle
     Scalar compute_angle(const Point& n1, const Point& n2) const;
 
     // mesh and properties
@@ -93,12 +105,16 @@ private:
     VertexProperty<Point> points_;
     VertexProperty<bool> vlocked_;
     EdgeProperty<bool> elocked_;
+    FaceProperty<bool> patch_face_;
 
     std::vector<Halfedge> hole_;
 
     // data for computing optimal triangulation
     std::vector<std::vector<Weight>> weight_;
     std::vector<std::vector<int>> index_;
+
+    // 2D unfolding of the boundary (empty when unfolding is not needed)
+    std::vector<Vector<Scalar, 2>> uv_;
 };
 
 HoleFilling::HoleFilling(SurfaceMesh& mesh) : mesh_(mesh)
@@ -155,13 +171,81 @@ void HoleFilling::fill_hole(Halfedge h)
 
     try
     {
-        triangulate_hole(h); // do minimal triangulation
-        refine();            // refine filled-in edges
+        trace_hole(h);
+
+        // Step 1: unfold a self-intersecting boundary into 2D so the
+        // triangulation sees a simple polygon instead of a folded loop.
+        if (boundary_self_intersects_2d())
+        {
+            unfold_boundary();
+        }
+
+        triangulate_hole(); // do minimal triangulation
+
+        // tag the newly created faces as the filling patch via a flood fill
+        // starting from the boundary loop, walking only across edges created
+        // during the triangulation (locked rim edges stop the flood)
+        patch_face_ = mesh_.add_face_property<bool>("HoleFilling:patch", false);
+        {
+            FaceProperty<bool> visited =
+                mesh_.add_face_property<bool>("HoleFilling:visited", false);
+            std::vector<Face> stack;
+            for (auto hh : hole_)
+            {
+                Face f = mesh_.face(mesh_.next_halfedge(hh));
+                if (f.is_valid() && !visited[f])
+                {
+                    visited[f] = true;
+                    stack.push_back(f);
+                }
+            }
+            while (!stack.empty())
+            {
+                Face f = stack.back();
+                stack.pop_back();
+                patch_face_[f] = true;
+                for (auto hh : mesh_.halfedges(f))
+                {
+                    Face nf = mesh_.face(mesh_.opposite_halfedge(hh));
+                    if (nf.is_valid() && !visited[nf])
+                    {
+                        // only walk across edges created during filling
+                        Edge e = mesh_.edge(hh);
+                        if (!elocked_[e])
+                        {
+                            visited[nf] = true;
+                            stack.push_back(nf);
+                        }
+                    }
+                }
+            }
+            mesh_.remove_face_property(visited);
+        }
+
+        // Step 2: keep interior vertices away from nearby surfaces/holes
+        fair_nearby_boundary();
+
+        refine(); // refine filled-in edges
+
+        // Step 4: verify and repair any remaining self-intersection
+        repair_self_intersections();
     }
     catch (InvalidInputException& e)
     {
         // clean up
         hole_.clear();
+        uv_.clear();
+        if (mesh_.has_face_property("HoleFilling:visited"))
+        {
+            auto vis =
+                mesh_.get_face_property<bool>("HoleFilling:visited");
+            mesh_.remove_face_property(vis);
+        }
+        if (mesh_.has_face_property("HoleFilling:patch"))
+        {
+            auto pf = mesh_.get_face_property<bool>("HoleFilling:patch");
+            mesh_.remove_face_property(pf);
+        }
         mesh_.remove_vertex_property(vlocked_);
         mesh_.remove_edge_property(elocked_);
 
@@ -170,13 +254,15 @@ void HoleFilling::fill_hole(Halfedge h)
 
     // clean up
     hole_.clear();
+    uv_.clear();
+    if (mesh_.has_face_property("HoleFilling:patch"))
+        mesh_.remove_face_property(patch_face_);
     mesh_.remove_vertex_property(vlocked_);
     mesh_.remove_edge_property(elocked_);
 }
 
-void HoleFilling::triangulate_hole(Halfedge h)
+void HoleFilling::trace_hole(Halfedge h)
 {
-    // trace hole
     hole_.clear();
     Halfedge hit = h;
     do
@@ -190,7 +276,137 @@ void HoleFilling::triangulate_hole(Halfedge h)
 
         hole_.emplace_back(hit);
     } while ((hit = mesh_.next_halfedge(hit)) != h);
-    const int n = hole_.size();
+}
+
+void HoleFilling::fit_boundary_plane(Point& centroid, Point& ax1,
+                                     Point& ax2) const
+{
+    const int n = static_cast<int>(hole_.size());
+
+    centroid = Point(0, 0, 0);
+    for (auto hh : hole_)
+        centroid += points_[mesh_.to_vertex(hh)];
+    centroid /= Scalar(n);
+
+    Eigen::Matrix3d cov = Eigen::Matrix3d::Zero();
+    for (auto hh : hole_)
+    {
+        const Point d = points_[mesh_.to_vertex(hh)] - centroid;
+        cov += Eigen::Vector3d(d[0], d[1], d[2]) *
+               Eigen::Vector3d(d[0], d[1], d[2]).transpose();
+    }
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es(cov);
+    const Eigen::Vector3d normal = es.eigenvectors().col(0);
+    const Point N(normal[0], normal[1], normal[2]);
+    if (std::abs(N[0]) < Scalar(0.9))
+        ax1 = normalize(cross(N, Point(1, 0, 0)));
+    else
+        ax1 = normalize(cross(N, Point(0, 1, 0)));
+    ax2 = cross(N, ax1);
+}
+
+// Project the boundary onto its least-squares best-fit plane and test the
+// resulting closed 2D polyline for proper self-intersection.
+bool HoleFilling::boundary_self_intersects_2d() const
+{
+    const int n = static_cast<int>(hole_.size());
+    if (n < 4)
+        return false;
+
+    // best-fit plane through the boundary vertices
+    Point centroid, ax1, ax2;
+    fit_boundary_plane(centroid, ax1, ax2);
+
+    std::vector<Vector<Scalar, 2>> p(n);
+    Scalar lo0 = 1e30f, hi0 = -1e30f, lo1 = 1e30f, hi1 = -1e30f;
+    for (int i = 0; i < n; ++i)
+    {
+        const Point d = points_[hole_vertex(i)] - centroid;
+        p[i] = Vector<Scalar, 2>(dot(d, ax1), dot(d, ax2));
+        lo0 = std::min(lo0, p[i][0]);
+        hi0 = std::max(hi0, p[i][0]);
+        lo1 = std::min(lo1, p[i][1]);
+        hi1 = std::max(hi1, p[i][1]);
+    }
+    // scale-relative tolerance so near-tangent crossings are still caught
+    const Scalar diag =
+        std::sqrt((hi0 - lo0) * (hi0 - lo0) + (hi1 - lo1) * (hi1 - lo1));
+    const Scalar eps = std::max(Scalar(1e-12), Scalar(1e-12) * diag);
+
+    // test non-adjacent segment pairs for a proper crossing
+    for (int i = 0; i < n; ++i)
+    {
+        const int i2 = (i + 1) % n;
+        for (int j = i + 2; j < n; ++j)
+        {
+            if (i == 0 && j == n - 1)
+                continue; // adjacent through the loop closure
+            const int j2 = (j + 1) % n;
+            if (interdetail::segments_cross2(p[i], p[i2], p[j], p[j2], eps))
+                return true;
+        }
+    }
+    return false;
+}
+
+// Unfold the boundary into a simple 2D polygon in the best-fit plane.
+// The projection of a folded boundary is not a simple loop, so it cannot be
+// triangulated directly. We rebuild a guaranteed-simple strictly convex
+// polygon that retains the boundary's metric information:
+//   - the walk uses the measured 3D edge lengths;
+//   - every external turn is derived from the local projected edge
+//     directions, then convexified (clipped to a strictly positive sub-pi
+//     range and renormalized to total turning 2*pi), keeping the local shape
+//     distribution where it is well defined while removing the loops;
+//   - the open chain is closed with a monotone linear residual ramp.
+// A folded loop is not perfectly developable, so the closure perturbs the
+// edge lengths slightly (never collapsing one); see unfold_simple_polygon.
+// The unfolding guides the triangulation topology only; the original 3D
+// boundary positions are restored before triangulation and the subsequent
+// fairing builds a smooth spatial patch.
+void HoleFilling::unfold_boundary()
+{
+    const int n = static_cast<int>(hole_.size());
+
+    Point centroid, ax1, ax2;
+    fit_boundary_plane(centroid, ax1, ax2);
+
+    // project all boundary points and record the measured 3D edge lengths
+    std::vector<Vector<Scalar, 2>> p(n);
+    std::vector<Scalar> lengths(n);
+    for (int i = 0; i < n; ++i)
+    {
+        const Point d = points_[hole_vertex(i)] - centroid;
+        p[i] = Vector<Scalar, 2>(dot(d, ax1), dot(d, ax2));
+        lengths[i] =
+            distance(points_[hole_vertex(i)],
+                     points_[hole_vertex((i + 1) % n)]);
+    }
+
+    uv_ = interdetail::unfold_simple_polygon(p, lengths);
+}
+
+void HoleFilling::triangulate_hole()
+{
+    const int n = static_cast<int>(hole_.size());
+
+    // When an unfolding is available, temporarily move the boundary vertices
+    // to their unfolded 3D positions so the angle/area DP operates on a
+    // simple polygon. Original positions are restored afterwards.
+    std::vector<Point> saved;
+    if (!uv_.empty())
+    {
+        Point centroid, ax1, ax2;
+        fit_boundary_plane(centroid, ax1, ax2);
+
+        saved.resize(n);
+        for (int i = 0; i < n; ++i)
+        {
+            saved[i] = points_[hole_vertex(i)];
+            points_[hole_vertex(i)] =
+                centroid + uv_[i][0] * ax1 + uv_[i][1] * ax2;
+        }
+    }
 
     // compute minimal triangulation by dynamic programming
     weight_.clear();
@@ -255,6 +471,13 @@ void HoleFilling::triangulate_hole(Halfedge h)
         todo.emplace_back(split, end);
     }
 
+    // restore the original 3D boundary positions
+    if (!saved.empty())
+    {
+        for (int r = 0; r < n; ++r)
+            points_[hole_vertex(r)] = saved[r];
+    }
+
     // clean up
     weight_.clear();
     index_.clear();
@@ -302,10 +525,108 @@ HoleFilling::Weight HoleFilling::compute_weight(int i, int j, int k) const
     return {angle, area};
 }
 
+// Detect boundary vertices that sit close to another part of the surface
+// (a neighboring hole rim or the opposite wall). Interior vertices created by
+// the triangulation are pulled toward the hole's safe side during relaxation
+// so the patch cannot bridge the gap and intersect the adjacent surface.
+// Cost: O(n*V) for a boundary of n vertices in a mesh of V vertices; the
+// fixed pass count keeps the relaxation itself linear in the patch size.
+void HoleFilling::fair_nearby_boundary()
+{
+    const int n = static_cast<int>(hole_.size());
+    if (n == 0)
+        return;
+
+    // characteristic edge length of the rim
+    Scalar mean_length(0);
+    for (int i = 0; i < n; ++i)
+        mean_length += distance(points_[hole_vertex(i)],
+                                points_[hole_vertex((i + 1) % n)]);
+    mean_length /= Scalar(n);
+    const Scalar proximity = Scalar(2.5) * mean_length;
+
+    // For each boundary vertex, look for a nearby non-patch surface point and
+    // record an inward repulsion direction (away from the obstacle).
+    std::vector<Point> repulse(n, Point(0, 0, 0));
+    std::vector<char> blocked(n, false);
+    for (int i = 0; i < n; ++i)
+    {
+        const Point pi = points_[hole_vertex(i)];
+        Scalar best = proximity * proximity;
+        Point nearest(0, 0, 0);
+        for (auto v : mesh_.vertices())
+        {
+            if (v == hole_vertex(i) || !vlocked_[v])
+                continue;
+            const Point pj = points_[v];
+            const Scalar d2 = sqrnorm(pj - pi);
+            if (d2 < best && d2 > Scalar(1e-20))
+            {
+                best = d2;
+                nearest = pj;
+            }
+        }
+        if (best < proximity * proximity)
+        {
+            blocked[i] = true;
+            repulse[i] = normalize(pi - nearest);
+        }
+    }
+
+    if (std::find(blocked.begin(), blocked.end(), true) == blocked.end())
+        return; // no proximity conflict, nothing to do
+
+    // Apply a few constrained Laplacian smoothing passes to the unlocked
+    // (interior) vertices, adding the repulsion field sampled at the rim.
+    for (int iter = 0; iter < 5; ++iter)
+    {
+        std::vector<Vertex> free_v;
+        for (auto v : mesh_.vertices())
+            if (!vlocked_[v])
+                free_v.push_back(v);
+        if (free_v.empty())
+            break;
+
+        std::vector<Point> target(free_v.size());
+        for (size_t vi = 0; vi < free_v.size(); ++vi)
+        {
+            const Vertex v = free_v[vi];
+            Point avg(0, 0, 0);
+            Scalar c(0);
+            for (auto vv : mesh_.vertices(v))
+            {
+                avg += points_[vv];
+                ++c;
+            }
+            avg /= c;
+
+            // weight repulsion by how close this interior vertex is to each
+            // blocked rim vertex, fading out with distance
+            Point force(0, 0, 0);
+            Scalar wsum(0);
+            for (int i = 0; i < n; ++i)
+            {
+                if (!blocked[i])
+                    continue;
+                const Point rim = points_[hole_vertex(i)];
+                const Scalar d = distance(points_[v], rim);
+                const Scalar w = Scalar(1) / (d + mean_length);
+                force += w * repulse[i];
+                wsum += w;
+            }
+            if (wsum > 0)
+                force /= wsum;
+            target[vi] = avg + Scalar(0.5) * mean_length * force;
+        }
+        for (size_t vi = 0; vi < free_v.size(); ++vi)
+            points_[free_v[vi]] = target[vi];
+    }
+}
+
 void HoleFilling::refine()
 {
     // compute target edge length
-    const int n = hole_.size();
+    const int n = static_cast<int>(hole_.size());
     Scalar mean_length(0);
     for (int i = 0; i < n; ++i)
     {
@@ -479,7 +800,12 @@ void HoleFilling::relaxation()
             vertices.emplace_back(v);
         }
     }
-    const int n = vertices.size();
+    const int n = static_cast<int>(vertices.size());
+    if (n == 0)
+    {
+        mesh_.remove_vertex_property(idx);
+        return;
+    }
 
     // setup matrix & rhs
     Eigen::MatrixXd B(n, 3);
@@ -611,6 +937,134 @@ void HoleFilling::fairing()
     // clean up
     if (add_vsel)
         mesh_.remove_vertex_property(vsel);
+}
+
+// Collect intersecting pairs of patch triangles (or a patch triangle against
+// any other triangle). Connectivity-adjacent pairs are ignored.
+// Cost: O(F^2) triangle/triangle tests over the F mesh faces; only pairs
+// involving at least one patch face are tested and the repair loop bounds the
+// number of refinement rounds, so the practical cost is patch-size limited.
+std::vector<std::pair<Face, Face>>
+HoleFilling::find_patch_intersections() const
+{
+    std::vector<Face> faces;
+    faces.reserve(mesh_.n_faces());
+    for (auto f : mesh_.faces())
+        faces.push_back(f);
+
+    auto tri_of = [&](Face f) {
+        std::array<Point, 3> t;
+        int idx = 0;
+        for (auto v : mesh_.vertices(f))
+            t[idx++] = points_[v];
+        return t;
+    };
+    auto verts_of = [&](Face f) {
+        std::array<Vertex, 3> v;
+        int idx = 0;
+        for (auto vv : mesh_.vertices(f))
+            v[idx++] = vv;
+        return v;
+    };
+
+    std::vector<std::pair<Face, Face>> hits;
+    for (size_t i = 0; i < faces.size(); ++i)
+    {
+        if (!patch_face_[faces[i]])
+            continue;
+        const auto ti = tri_of(faces[i]);
+        const auto vi = verts_of(faces[i]);
+        for (size_t j = i + 1; j < faces.size(); ++j)
+        {
+            // at least one face must belong to the filling patch
+            if (!patch_face_[faces[i]] && !patch_face_[faces[j]])
+                continue;
+            const auto tj = tri_of(faces[j]);
+            const auto vj = verts_of(faces[j]);
+            bool shared = false;
+            for (auto a : vi)
+                for (auto b : vj)
+                    if (a == b)
+                    {
+                        shared = true;
+                        break;
+                    }
+            if (shared)
+                continue;
+            if (interdetail::triangles_intersect(ti, tj))
+                hits.emplace_back(faces[i], faces[j]);
+        }
+    }
+    return hits;
+}
+
+// Insert a Steiner vertex at the face centroid and split the triangle into
+// three, then relax the new vertex. This is a Delaunay-style refinement step:
+// it introduces an interior degree-6 vertex that can be smoothed out of the
+// intersecting configuration without changing the boundary.
+void HoleFilling::delaunay_refine_face(Face f)
+{
+    if (!f.is_valid() || mesh_.is_deleted(f))
+        return;
+    Point centroid(0, 0, 0);
+    int c(0);
+    for (auto v : mesh_.vertices(f))
+    {
+        centroid += points_[v];
+        ++c;
+    }
+    centroid /= Scalar(c);
+
+    // nudge the Steiner point slightly toward the average face normal so it
+    // leaves the plane of the intersecting triangle
+    Normal n(0, 0, 0);
+    for (auto h : mesh_.halfedges(f))
+    {
+        Face nf = mesh_.face(mesh_.opposite_halfedge(h));
+        if (nf.is_valid())
+            n += face_normal(mesh_, nf);
+    }
+    if (norm(n) > Scalar(1e-12))
+        centroid += Scalar(0.15) * normalize(n);
+
+    const Vertex sv = mesh_.add_vertex(centroid);
+    vlocked_[sv] = false; // interior, eligible for smoothing/fairing
+    mesh_.split(f, sv);
+    // tag the three child faces as part of the patch
+    for (auto cf : mesh_.faces(sv))
+        patch_face_[cf] = true;
+}
+
+// Iteratively locate self-intersecting patch triangles and resolve them with
+// interior Steiner vertices followed by constrained relaxation. Bounded to
+// keep the refinement tractable on pathological inputs.
+void HoleFilling::repair_self_intersections()
+{
+    const int max_rounds = 8;
+    for (int round = 0; round < max_rounds; ++round)
+    {
+        auto hits = find_patch_intersections();
+        if (hits.empty())
+            return;
+
+        std::unordered_set<int> refined;
+        for (auto [f1, f2] : hits)
+        {
+            for (Face f : {f1, f2})
+            {
+                if (f.is_valid() && !mesh_.is_deleted(f) &&
+                    patch_face_[f] &&
+                    refined.insert(f.idx()).second)
+                {
+                    delaunay_refine_face(f);
+                }
+            }
+        }
+
+        // smooth the newly inserted interior vertices so the local patch
+        // relaxes out of the intersecting arrangement
+        relaxation();
+    }
 }
 
 } // namespace

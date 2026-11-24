@@ -1,0 +1,182 @@
+[
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/predicates.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/predicates.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/predicates.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/predicates.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/surface_mesh.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/surface_mesh.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/surface_mesh.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/surface_mesh.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/analysis.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/analysis.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/analysis.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/analysis.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/curvature.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/curvature.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/curvature.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/curvature.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -Wno-array-bounds -Wno-stringop-overflow -o src/pmp/CMakeFiles/pmp.dir/algorithms/decimation.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/decimation.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/decimation.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/decimation.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/differential_geometry.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/differential_geometry.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/differential_geometry.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/differential_geometry.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/distance_point_triangle.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/distance_point_triangle.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/distance_point_triangle.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/distance_point_triangle.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/fairing.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/fairing.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/fairing.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/fairing.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/features.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/features.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/features.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/features.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/geodesics.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/geodesics.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/geodesics.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/geodesics.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/hole_filling.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/hole_filling.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/hole_filling.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/hole_filling.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/laplace.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/laplace.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/laplace.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/laplace.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/normals.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/normals.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/normals.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/normals.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/numerics.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/numerics.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/numerics.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/numerics.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/parameterization.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/parameterization.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/parameterization.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/parameterization.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/remeshing.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/remeshing.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/remeshing.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/remeshing.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/shapes.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/shapes.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/shapes.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/shapes.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/smoothing.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/smoothing.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/smoothing.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/smoothing.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/subdivision.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/subdivision.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/subdivision.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/subdivision.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/triangulation.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/triangulation.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/triangulation.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/triangulation.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/algorithms/utilities.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/algorithms/utilities.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/algorithms/utilities.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/algorithms/utilities.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/io.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/io.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/io.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/io.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/read_obj.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/read_obj.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/read_obj.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/read_obj.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/read_off.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/read_off.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/read_off.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/read_off.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/read_pmp.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/read_pmp.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/read_pmp.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/read_pmp.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/read_stl.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/read_stl.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/read_stl.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/read_stl.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/write_obj.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/write_obj.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/write_obj.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/write_obj.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/write_off.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/write_off.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/write_off.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/write_off.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/write_pmp.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/write_pmp.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/write_pmp.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/write_pmp.cpp.o"
+},
+{
+  "directory": "/home/liiing/feedback/uid36881/build_strict",
+  "command": "/home/liiing/feedback/uid36881/artifacts/toolchain/g++ -I/home/liiing/feedback/uid36881/src -I/home/liiing/feedback/uid36881/external -I/home/liiing/feedback/uid36881/external/eigen-5.0.1 -I/home/liiing/feedback/uid36881/src/pmp/..  -pedantic -Wall -Wextra -Wshadow -Werror -Wno-deprecated-copy -Wno-int-in-bool-context -O3 -DNDEBUG -std=gnu++20 -fopenmp -o src/pmp/CMakeFiles/pmp.dir/io/write_stl.cpp.o -c /home/liiing/feedback/uid36881/src/pmp/io/write_stl.cpp",
+  "file": "/home/liiing/feedback/uid36881/src/pmp/io/write_stl.cpp",
+  "output": "/home/liiing/feedback/uid36881/build_strict/src/pmp/CMakeFiles/pmp.dir/io/write_stl.cpp.o"
+}
+]
